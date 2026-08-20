@@ -1,0 +1,10 @@
+{
+  "name": "customer-vehicle-qr-backend",
+  "version": "1.0.0",
+  "description": "Backend API server for customer vehicle form",
+  "main": "server.js",
+  "scripts": {
+    "start": "node api.js && node server.js",
+    "dev": "node api.js && node --watch server.js"
+  }
+}
