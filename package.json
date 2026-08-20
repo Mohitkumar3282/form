@@ -1,0 +1,31 @@
+{
+  "name": "customer-vehicle-qr-app",
+  "version": "1.0.0",
+  "description": "Full-stack customer vehicle registration web app with MongoDB Atlas integration",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "mongoose",
+    "qrcode",
+    "render",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.1",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^9.4.0"
+  }
+}
