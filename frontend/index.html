@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Vehicle Registration & QR Manager</title>
+  <meta name="description" content="Public customer vehicle details collection form with QR code links and MongoDB persistence.">
+  <link rel="stylesheet" href="public/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="header">
+    <div class="header-container">
+      <a href="#" class="logo-brand">
+        <div class="logo-icon">🚗</div>
+        <div>
+          <span>Auto</span><span style="color: var(--accent-primary);">Register</span>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button class="nav-btn active" data-tab="formTab">
+          <span>📝</span> Form
+        </button>
+        <button class="nav-btn" data-tab="recordsTab">
+          <span>🔒</span> Admin Records
+        </button>
+        <button class="nav-btn" data-tab="qrTab">
+          <span>📱</span> QR Code
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+          <span id="themeIcon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-wrapper">
+
+    <!-- ================= TAB 1: PUBLIC CUSTOMER FORM ================= -->
+    <section id="formTab" class="tab-content active">
+      <div class="section-header">
+        <div class="section-badge">Public Access Form</div>
+        <h1 class="section-title">Customer Vehicle Registration</h1>
+        <p class="section-subtitle">Please enter your customer and vehicle details below. Data is validated and saved directly to MongoDB.</p>
+      </div>
+
+      <div class="form-container">
+        <!-- Form Glass Card -->
+        <div class="glass-card">
+          <form id="customerForm" novalidate>
+            <div class="form-grid">
+              
+              <!-- Customer Name Field -->
+              <div class="form-group">
+                <label for="name" class="form-label">
+                  <span>Customer Name <span style="color: var(--error);">*</span></span>
+                </label>
+                <div class="input-wrapper">
+                  <span class="input-icon">👤</span>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    class="form-input" 
+                    placeholder="e.g. John Doe"
+                    required
+                    autocomplete="name"
+                  >
+                </div>
+                <div id="nameErr" class="error-message">
+                  <span>⚠️</span> Please enter a valid customer name (at least 2 characters).
+                </div>
+              </div>
+
+              <!-- Mobile Number & Vehicle Number Row -->
+              <div class="form-grid form-grid-2col">
+                <!-- Mobile Number Field -->
+                <div class="form-group">
+                  <label for="mobile" class="form-label">
+                    <span>Mobile Number <span style="color: var(--error);">*</span></span>
+                  </label>
+                  <div class="input-wrapper">
+                    <span class="input-icon">📞</span>
+                    <input 
+                      type="tel" 
+                      id="mobile" 
+                      name="mobile" 
+                      class="form-input" 
+                      placeholder="e.g. 9876543210"
+                      required
+                      autocomplete="tel"
+                    >
+                  </div>
+                  <div id="mobileErr" class="error-message">
+                    <span>⚠️</span> Enter a valid 10-15 digit mobile number.
+                  </div>
+                </div>
+
+                <!-- Vehicle Number Field -->
+                <div class="form-group">
+                  <label for="vehicleNumber" class="form-label">
+                    <span>Vehicle Number <span style="color: var(--error);">*</span></span>
+                    <span class="label-hint">Auto-uppercase</span>
+                  </label>
+                  <div class="input-wrapper">
+                    <span class="input-icon">🚘</span>
+                    <input 
+                      type="text" 
+                      id="vehicleNumber" 
+                      name="vehicleNumber" 
+                      class="form-input" 
+                      placeholder="e.g. MH-12-AB-1234"
+                      style="text-transform: uppercase; font-family: var(--font-mono);"
+                      required
+                    >
+                  </div>
+                  <div id="vehicleErr" class="error-message">
+                    <span>⚠️</span> Enter a valid vehicle registration number.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Address Field -->
+              <div class="form-group">
+                <label for="address" class="form-label">
+                  <span>Residential / Delivery Address <span style="color: var(--error);">*</span></span>
+                  <span id="addressCharCount" class="char-counter">0 / 300</span>
+                </label>
+                <textarea 
+                  id="address" 
+                  name="address" 
+                  class="form-textarea" 
+                  placeholder="Enter full street address, landmark, city and pincode..."
+                  maxlength="300"
+                  required
+                ></textarea>
+                <div id="addressErr" class="error-message">
+                  <span>⚠️</span> Address must be at least 5 characters long.
+                </div>
+              </div>
+
+              <!-- Submit Action Button -->
+              <div style="margin-top: 0.5rem;">
+                <button type="submit" id="submitBtn" class="btn-primary">
+                  <span id="btnText">Submit Registration</span>
+                  <div id="btnSpinner" class="spinner" style="display: none;"></div>
+                </button>
+              </div>
+
+            </div>
+          </form>
+
+          <!-- Success Feedback Banner -->
+          <div id="successBanner" class="success-banner">
+            <div class="success-icon">✓</div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">Registration Completed!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">Your customer and vehicle details have been verified and saved to the database.</p>
+            <button id="resetFormBtn" class="btn-secondary">
+              <span>➕</span> Register Another Vehicle
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: STORED RECORDS DASHBOARD (PROTECTED ADMIN ACCESS) ================= -->
+    <section id="recordsTab" class="tab-content">
+      <div class="section-header">
+        <div class="section-badge">Restricted Admin Access</div>
+        <h1 class="section-title">Customer Records Dashboard</h1>
+        <p class="section-subtitle">Private customer vehicle records protected by admin authorization.</p>
+      </div>
+
+      <!-- ADMIN AUTHENTICATION LOCK CARD (Shown when not authenticated) -->
+      <div id="adminAuthCard" class="glass-card" style="max-width: 460px; margin: 0 auto; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">Admin Passcode Required</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Customer vehicle records are private. Please enter the admin passcode to unlock this view.</p>
+        
+        <form id="adminLoginForm">
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <div class="input-wrapper">
+              <span class="input-icon">🔑</span>
+              <input 
+                type="password" 
+                id="adminPasswordInput" 
+                class="form-input" 
+                placeholder="Enter Admin Passcode" 
+                required
+              >
+            </div>
+            <div id="adminLoginErr" class="error-message">
+              <span>⚠️</span> Invalid passcode. Please try again.
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">
+            <span>🔓</span> Unlock Records Dashboard
+          </button>
+        </form>
+      </div>
+
+      <!-- RECORDS DASHBOARD CONTENT (Shown ONLY when Admin is authenticated) -->
+      <div id="recordsDashboardContent" style="display: none;">
+        <!-- Quick Stats -->
+        <div class="stats-bar">
+          <div class="stat-card">
+            <div id="totalCount" class="stat-value">0</div>
+            <div class="stat-label">Total Records</div>
+          </div>
+          <div class="stat-card">
+            <div id="todayCount" class="stat-value">0</div>
+            <div class="stat-label">Registered Today</div>
+          </div>
+        </div>
+
+        <!-- Dashboard Controls & Search -->
+        <div class="dashboard-controls">
+          <div class="search-box">
+            <div class="input-wrapper">
+              <span class="input-icon">🔍</span>
+              <input 
+                type="text" 
+                id="searchInput" 
+                class="form-input" 
+                placeholder="Search by name, phone, or vehicle number..."
+              >
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button id="refreshRecordsBtn" class="btn-secondary" title="Refresh Table">
+              <span>🔄</span> Refresh
+            </button>
+            <button id="exportCsvBtn" class="btn-secondary" title="Export as CSV file">
+              <span>📥</span> Export CSV
+            </button>
+            <button id="adminLogoutBtn" class="btn-secondary" style="border-color: var(--error-bg); color: var(--error);" title="Lock Dashboard">
+              <span>🔒</span> Logout Admin
+            </button>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="glass-card" style="padding: 0; overflow: hidden;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Mobile Number</th>
+                  <th>Vehicle Number</th>
+                  <th>Address</th>
+                  <th>Date & Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recordsTableBody">
+                <tr>
+                  <td colspan="5" class="empty-state">
+                    <div class="spinner" style="margin: 0 auto 1rem;"></div>
+                    Loading stored records...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 3: DYNAMIC QR CODE MANAGER ================= -->
+    <section id="qrTab" class="tab-content">
+      <div class="section-header">
+        <div class="section-badge">QR Code Link</div>
+        <h1 class="section-title">Public Form QR Code</h1>
+        <p class="section-subtitle">Scan this QR code with any smartphone camera to open the public registration form page.</p>
+      </div>
+
+      <div class="glass-card" style="max-width: 720px; margin: 0 auto;">
+        <div class="qr-container">
+          
+          <!-- QR Code Display Box -->
+          <div class="qr-box">
+            <img id="qrImage" src="" alt="Public Form QR Code" class="qr-image">
+            <span style="font-size: 0.75rem; color: #475569; margin-top: 0.5rem; font-weight: 600;">Scan with Phone Camera</span>
+          </div>
+
+          <!-- QR Link Options & Configuration -->
+          <div class="qr-details">
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem;">Form Target URL</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">This is the public URL encoded inside the QR code image.</p>
+            </div>
+
+            <div class="form-group">
+              <div class="url-input-group">
+                <input type="url" id="targetUrlInput" class="form-input" placeholder="http://localhost:3000/">
+                <button id="generateQrBtn" class="btn-secondary" style="white-space: nowrap;">
+                  Update
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem;">
+              <button id="copyLinkBtn" class="btn-secondary">
+                <span>📋</span> Copy URL
+              </button>
+              <button id="downloadQrBtn" class="btn-primary" style="width: auto; padding: 0.65rem 1.25rem; font-size: 0.875rem;">
+                <span>⬇️</span> Download PNG
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification Area -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2026 AutoRegister System • Powered by Node.js, Express & MongoDB</p>
+  </footer>
+
+  <script src="public/js/app.js"></script>
+</body>
+</html>
